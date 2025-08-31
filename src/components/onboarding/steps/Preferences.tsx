@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   VStack,
-  HStack,
   Text,
   Box,
   useColorModeValue,
@@ -13,13 +12,11 @@ import {
   SliderThumb,
   SliderMark,
   Select,
-  FormControl,
-  FormLabel,
   RadioGroup,
   Radio,
   Stack
 } from '@chakra-ui/react';
-import { FiDollarSign, FiTarget, FiCalendar } from 'react-icons/fi';
+
 
 interface PreferencesProps {
   formData: any;

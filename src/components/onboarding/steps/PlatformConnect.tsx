@@ -3,7 +3,6 @@ import {
   VStack,
   HStack,
   Text,
-  Button,
   Box,
   Icon,
   useColorModeValue,
@@ -13,7 +12,7 @@ import {
   Switch,
   Badge
 } from '@chakra-ui/react';
-import { FiInstagram, FiYoutube, FiTwitter, FiLink } from 'react-icons/fi';
+import { FiInstagram, FiYoutube, FiTwitter } from 'react-icons/fi';
 
 interface PlatformConnectProps {
   formData: any;

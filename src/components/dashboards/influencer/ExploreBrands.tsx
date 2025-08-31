@@ -17,12 +17,11 @@ import {
   InputGroup,
   InputLeftElement,
   Icon,
-  Avatar,
-  Progress
+  Avatar
 } from '@chakra-ui/react';
 import { motion } from 'framer-motion';
-import { FiSearch, FiFilter, FiDollarSign, FiUsers, FiTarget } from 'react-icons/fi';
-import { dummyCampaigns, dummyBrands } from '../../../data/dummyData.js';
+import { FiSearch, FiTarget } from 'react-icons/fi';
+import { dummyCampaigns } from '../../../data/dummyData.js';
 
 const MotionBox = motion.create(Box);
 

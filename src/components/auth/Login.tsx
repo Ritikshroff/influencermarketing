@@ -18,7 +18,7 @@ import {
   useColorModeValue
 } from '@chakra-ui/react';
 import { motion } from 'framer-motion';
-import { FiEye, FiEyeOff, FiMail, FiLock, FiArrowRight } from 'react-icons/fi';
+import { FiEye, FiEyeOff, FiArrowRight } from 'react-icons/fi';
 import { useAuth } from '../../contexts/AuthContext';
 
 const MotionBox = motion.create(Box);

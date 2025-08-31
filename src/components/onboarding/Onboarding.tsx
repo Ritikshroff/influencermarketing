@@ -9,7 +9,6 @@ import {
   Progress,
   useColorModeValue,
   useToast,
-  Icon,
   Heading
 } from '@chakra-ui/react';
 import { motion, AnimatePresence } from 'framer-motion';

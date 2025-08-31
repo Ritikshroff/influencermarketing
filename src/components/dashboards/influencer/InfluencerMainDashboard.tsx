@@ -7,12 +7,10 @@ import {
   HStack,
   Text,
   Stat,
-  StatLabel,
   StatNumber,
   StatHelpText,
   StatArrow,
   Badge,
-  Avatar,
   Button,
   useColorModeValue,
   SimpleGrid,
@@ -30,12 +28,10 @@ import {
   FiDollarSign,
   FiAward,
   FiEye,
-  FiHeart,
-  FiMessageSquare,
-  FiStar
+  FiMessageSquare
 } from 'react-icons/fi';
 import { useAuth } from '../../../contexts/AuthContext';
-import { dummyInfluencers, dummyCampaigns, dummyNotifications } from '../../../data/dummyData.js';
+import { dummyInfluencers, dummyCampaigns } from '../../../data/dummyData.js';
 import ChartWrapper from '../../charts/ChartWrapper';
 
 const MotionBox = motion.create(Box);

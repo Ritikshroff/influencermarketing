@@ -16,7 +16,7 @@ import {
   Icon
 } from '@chakra-ui/react';
 import { motion } from 'framer-motion';
-import { FiMail, FiArrowLeft, FiCheckCircle } from 'react-icons/fi';
+import { FiArrowLeft, FiCheckCircle } from 'react-icons/fi';
 
 const MotionBox = motion.create(Box);
 

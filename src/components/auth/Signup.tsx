@@ -21,7 +21,7 @@ import {
   Stack
 } from '@chakra-ui/react';
 import { motion } from 'framer-motion';
-import { FiEye, FiEyeOff, FiMail, FiUser, FiArrowRight, FiStar } from 'react-icons/fi';
+import { FiEye, FiEyeOff, FiArrowRight, FiStar } from 'react-icons/fi';
 import { useAuth } from '../../contexts/AuthContext';
 
 const MotionBox = motion.create(Box);
