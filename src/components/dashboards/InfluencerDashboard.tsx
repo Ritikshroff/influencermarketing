@@ -11,7 +11,7 @@ import Messages from './influencer/Messages';
 
 const InfluencerDashboard: React.FC = () => {
   return (
-    <DashboardLayout userType="influencer">
+    <DashboardLayout>
       <Routes>
         <Route path="/dashboard" element={<InfluencerMainDashboard />} />
         {/* <Route path="/analytics" element={<InfluencerAnalytics />} /> */}

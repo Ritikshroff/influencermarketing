@@ -7,13 +7,16 @@ import {
   Text,
   IconButton,
   useColorModeValue,
+  useBreakpointValue,
+  useDisclosure,
   Drawer,
   DrawerBody,
   DrawerHeader,
   DrawerOverlay,
   DrawerContent,
   DrawerCloseButton,
-  useDisclosure,
+  Button,
+  Divider,
   Avatar,
   Menu,
   MenuButton,
@@ -21,162 +24,279 @@ import {
   MenuItem,
   MenuDivider,
   Badge,
-  Icon,
   useToast
 } from '@chakra-ui/react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   FiMenu,
   FiHome,
   FiTrendingUp,
   FiUsers,
-  FiMessageSquare,
-  FiBell,
   FiSettings,
   FiLogOut,
+  FiBell,
+  FiSearch,
   FiUser,
   FiDollarSign,
+  FiBarChart,
+  FiTarget,
+  FiMessageSquare,
   FiAward,
-  FiSearch,
-  FiPlus
+  FiCalendar
 } from 'react-icons/fi';
 import { useAuth } from '../../contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
-
-interface DashboardLayoutProps {
-  children: React.ReactNode;
-  userType: 'influencer' | 'brand';
-}
-
-interface NavItem {
-  label: string;
-  icon: React.ReactElement;
-  href: string;
-  badge?: string;
-}
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const MotionBox = motion.create(Box);
 
-const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, userType }) => {
-  const { isOpen, onOpen, onClose } = useDisclosure();
+interface DashboardLayoutProps {
+  children: React.ReactNode;
+}
+
+const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
 
   const bgColor = useColorModeValue('white', 'gray.800');
-  const sidebarBg = useColorModeValue('gray.50', 'gray.900');
   const borderColor = useColorModeValue('gray.200', 'gray.600');
+  const textColor = useColorModeValue('gray.800', 'white');
+  const mutedTextColor = useColorModeValue('gray.600', 'gray.300');
+  const sidebarBg = useColorModeValue('gray.50', 'gray.900');
+  const sidebarBorderColor = useColorModeValue('gray.200', 'gray.700');
 
-  const influencerNavItems: NavItem[] = [
-    { label: 'Dashboard', icon: <FiHome />, href: '/influencer/dashboard' },
-    { label: 'Analytics', icon: <FiTrendingUp />, href: '/influencer/analytics' },
-    { label: 'Explore Brands', icon: <FiUsers />, href: '/influencer/brands' },
-    { label: 'My Applications', icon: <FiSearch />, href: '/influencer/applications' },
-    { label: 'Earnings', icon: <FiDollarSign />, href: '/influencer/earnings' },
-    { label: 'Leaderboard', icon: <FiAward />, href: '/influencer/leaderboard' },
-    { label: 'Messages', icon: <FiMessageSquare />, href: '/influencer/messages', badge: '3' },
-  ];
+  const isMobile = useBreakpointValue({ base: true, md: false });
 
-  const brandNavItems: NavItem[] = [
-    { label: 'Dashboard', icon: <FiHome />, href: '/brand/dashboard' },
-    { label: 'Campaigns', icon: <FiTrendingUp />, href: '/brand/campaigns' },
-    { label: 'Create Campaign', icon: <FiPlus />, href: '/brand/create-campaign' },
-    { label: 'Influencer Search', icon: <FiUsers />, href: '/brand/influencers' },
-    { label: 'Analytics', icon: <FiTrendingUp />, href: '/brand/analytics' },
-    { label: 'Ad Spend', icon: <FiDollarSign />, href: '/brand/ad-spend' },
-    { label: 'Messages', icon: <FiMessageSquare />, href: '/brand/messages', badge: '2' },
-  ];
 
-  const navItems = userType === 'influencer' ? influencerNavItems : brandNavItems;
-
-  const handleLogout = () => {
-    logout();
-    toast({
-      title: 'See you later! 👋',
-      description: 'You have been successfully logged out.',
-      status: 'success',
-      duration: 3000,
-      isClosable: true,
-    });
-    navigate('/login');
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate('/login');
+      toast({
+        title: 'Logged out successfully',
+        status: 'success',
+        duration: 3000,
+        isClosable: true,
+      });
+    } catch (error) {
+      toast({
+        title: 'Error logging out',
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      });
+    }
   };
+
+  const navigationItems = [
+    {
+      name: 'Dashboard',
+      icon: FiHome,
+      path: user?.userType === 'brand' ? '/brand/dashboard' : '/influencer/dashboard',
+      badge: null
+    },
+    {
+      name: 'Campaigns',
+      icon: FiTarget,
+      path: user?.userType === 'brand' ? '/brand/campaigns' : '/influencer/campaigns',
+      badge: user?.userType === 'brand' ? '3' : null
+    },
+    {
+      name: 'Analytics',
+      icon: FiBarChart,
+      path: user?.userType === 'brand' ? '/brand/analytics' : '/influencer/analytics',
+      badge: null
+    },
+    {
+      name: 'Influencers',
+      icon: FiUsers,
+      path: user?.userType === 'brand' ? '/brand/influencers' : '/influencer/explore-brands',
+      badge: user?.userType === 'brand' ? '12' : null
+    },
+    {
+      name: 'Messages',
+      icon: FiMessageSquare,
+      path: '/messages',
+      badge: '2'
+    },
+    {
+      name: 'Earnings',
+      icon: FiDollarSign,
+      path: user?.userType === 'influencer' ? '/influencer/earnings' : '/brand/billing',
+      badge: null
+    },
+    {
+      name: 'Calendar',
+      icon: FiCalendar,
+      path: '/calendar',
+      badge: null
+    },
+    {
+      name: 'Achievements',
+      icon: FiAward,
+      path: user?.userType === 'influencer' ? '/influencer/achievements' : '/brand/achievements',
+      badge: user?.userType === 'influencer' ? '5' : null
+    }
+  ];
 
   const SidebarContent = () => (
     <VStack spacing={0} align="stretch" h="full">
-      {/* Logo */}
-      <Box p={6} borderBottom="1px" borderColor={borderColor}>
-        <Text
-          fontSize="xl"
-          fontWeight="bold"
-          bgGradient="linear(to-r, purple.500, blue.500)"
-          bgClip="text"
-        >
-          InfluenceHub ✨
-        </Text>
-      </Box>
-
-      {/* Navigation */}
-      <VStack spacing={2} p={4} flex={1}>
-        {navItems.map((item) => (
-          <Box
-            key={item.label}
-            w="full"
-            as="button"
-            onClick={() => navigate(item.href)}
-            _hover={{ bg: 'purple.50' }}
-            borderRadius="lg"
-            p={3}
-            textAlign="left"
-            transition="all 0.2s"
-          >
-            <HStack spacing={3}>
-              <Icon color="purple.500" />
-              <Text fontSize="sm" fontWeight="medium">
-                {item.label}
-              </Text>
-              {item.badge && (
-                <Badge colorScheme="red" size="sm" ml="auto">
-                  {item.badge}
-                </Badge>
-              )}
-            </HStack>
-          </Box>
-        ))}
-      </VStack>
-
-      {/* User Profile */}
-      <Box p={4} borderTop="1px" borderColor={borderColor}>
+      {/* Logo/Brand Section */}
+      <Box p={6} borderBottom="1px" borderColor={sidebarBorderColor}>
         <HStack spacing={3}>
-          <Avatar size="sm" src={user?.avatar} name={user?.name} />
-          <VStack align="start" spacing={0} flex={1}>
-            <Text fontSize="sm" fontWeight="medium">
-              {user?.name}
+          <Box
+            p={2}
+            borderRadius="lg"
+            bg="purple.100"
+            color="purple.600"
+          >
+            <FiTrendingUp size={24} />
+          </Box>
+          <VStack align="start" spacing={0}>
+            <Text fontSize="lg" fontWeight="bold" color={textColor}>
+              PromptAI
             </Text>
-            <Text fontSize="xs" color="gray.500">
-              {userType === 'influencer' ? 'Influencer' : 'Brand'}
+            <Text fontSize="xs" color={mutedTextColor}>
+              Dashboard
             </Text>
           </VStack>
         </HStack>
+      </Box>
+
+      {/* Navigation Items */}
+      <VStack spacing={1} align="stretch" flex={1} p={4}>
+        {navigationItems.map((item) => {
+          const isActive = location.pathname === item.path;
+          const IconComponent = item.icon;
+          
+          return (
+            <Button
+              key={item.name}
+              variant="ghost"
+              justifyContent="start"
+              leftIcon={<IconComponent size={20} />}
+              rightIcon={item.badge ? (
+                <Badge
+                  colorScheme="purple"
+                  variant="solid"
+                  size="sm"
+                  borderRadius="full"
+                >
+                  {item.badge}
+                </Badge>
+              ) : undefined}
+              onClick={() => {
+                navigate(item.path);
+                if (isMobile) onClose();
+              }}
+              bg={isActive ? 'purple.50' : 'transparent'}
+              color={isActive ? 'purple.600' : textColor}
+              _hover={{
+                bg: isActive ? 'purple.100' : 'gray.100',
+                color: isActive ? 'purple.700' : textColor,
+              }}
+              _active={{
+                bg: isActive ? 'purple.200' : 'gray.200',
+              }}
+              h="auto"
+              py={3}
+              px={4}
+              borderRadius="lg"
+              fontWeight="medium"
+              fontSize="sm"
+              transition="all 0.2s"
+            >
+              <Text flex={1} textAlign="left">
+                {item.name}
+              </Text>
+            </Button>
+          );
+        })}
+      </VStack>
+
+      {/* User Profile Section */}
+      <Box p={4} borderTop="1px" borderColor={sidebarBorderColor}>
+        <VStack spacing={3} align="stretch">
+          <Divider />
+          <HStack spacing={3}>
+            <Avatar
+              size="sm"
+              src={user?.avatar}
+              name={user?.name}
+              bg="purple.100"
+            />
+            <VStack align="start" spacing={0} flex={1}>
+              <Text fontSize="sm" fontWeight="medium" color={textColor}>
+                {user?.name}
+              </Text>
+              <Text fontSize="xs" color={mutedTextColor}>
+                {user?.userType === 'brand' ? 'Brand Manager' : 'Influencer'}
+              </Text>
+            </VStack>
+          </HStack>
+          
+          <VStack spacing={1} align="stretch">
+            <Button
+              variant="ghost"
+              size="sm"
+              leftIcon={<FiSettings size={16} />}
+              onClick={() => navigate('/settings')}
+              justifyContent="start"
+              color={mutedTextColor}
+              _hover={{ bg: 'gray.100', color: textColor }}
+              h="auto"
+              py={2}
+              px={3}
+              borderRadius="md"
+              fontSize="xs"
+            >
+              Settings
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              leftIcon={<FiLogOut size={16} />}
+              onClick={handleLogout}
+              justifyContent="start"
+              color="red.500"
+              _hover={{ bg: 'red.50', color: 'red.600' }}
+              h="auto"
+              py={2}
+              px={3}
+              borderRadius="md"
+              fontSize="xs"
+            >
+              Logout
+            </Button>
+          </VStack>
+        </VStack>
       </Box>
     </VStack>
   );
 
   return (
-    <Box h="100vh" bg="gray.50">
-      {/* Mobile Sidebar */}
-      <Drawer isOpen={isOpen} placement="left" onClose={onClose}>
+    <Box minH="100vh" bg={useColorModeValue('gray.50', 'gray.900')}>
+      {/* Mobile Drawer */}
+      <Drawer isOpen={isOpen} placement="left" onClose={onClose} size="xs">
         <DrawerOverlay />
-        <DrawerContent>
+        <DrawerContent bg={sidebarBg} borderRight="1px" borderColor={sidebarBorderColor}>
           <DrawerCloseButton />
-          <DrawerHeader borderBottomWidth="1px">
-            <Text
-              fontSize="lg"
-              fontWeight="bold"
-              bgGradient="linear(to-r, purple.500, blue.500)"
-              bgClip="text"
-            >
-              InfluenceHub
-            </Text>
+          <DrawerHeader borderBottom="1px" borderColor={sidebarBorderColor} pb={4}>
+            <HStack spacing={3}>
+              <Box
+                p={2}
+                borderRadius="lg"
+                bg="purple.100"
+                color="purple.600"
+              >
+                <FiTrendingUp size={20} />
+              </Box>
+              <Text fontSize="md" fontWeight="bold" color={textColor}>
+                PromptAI
+              </Text>
+            </HStack>
           </DrawerHeader>
           <DrawerBody p={0}>
             <SidebarContent />
@@ -184,96 +304,174 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, userType })
         </DrawerContent>
       </Drawer>
 
-      {/* Desktop Layout */}
-      <Flex h="full">
+      <Flex>
         {/* Desktop Sidebar */}
-        <Box
-          display={{ base: 'none', md: 'block' }}
-          w="280px"
-          bg={sidebarBg}
-          borderRight="1px"
-          borderColor={borderColor}
-        >
-          <SidebarContent />
-        </Box>
+        {!isMobile && (
+          <Box
+            w={{ base: 'full', md: '280px' }}
+            bg={sidebarBg}
+            borderRight="1px"
+            borderColor={sidebarBorderColor}
+            h="100vh"
+            position="sticky"
+            top={0}
+            overflowY="auto"
+            display={{ base: 'none', md: 'block' }}
+          >
+            <SidebarContent />
+          </Box>
+        )}
 
         {/* Main Content */}
-        <Box flex={1} display="flex" flexDirection="column">
-          {/* Top Navbar */}
+        <Box flex={1} minW={0}>
+          {/* Top Navigation Bar */}
           <Box
             bg={bgColor}
             borderBottom="1px"
             borderColor={borderColor}
-            p={4}
-            display="flex"
-            alignItems="center"
-            justifyContent="space-between"
+            px={{ base: 4, md: 6 }}
+            py={4}
+            position="sticky"
+            top={0}
+            zIndex={10}
+            backdropFilter="blur(10px)"
           >
-            <HStack spacing={4}>
-              <IconButton
-                display={{ base: 'flex', md: 'none' }}
-                icon={<FiMenu />}
-                onClick={onOpen}
-                variant="ghost"
-                aria-label="Open menu"
-              />
-              <Text fontSize="lg" fontWeight="semibold">
-                {userType === 'influencer' ? 'Influencer Dashboard' : 'Brand Dashboard'}
-              </Text>
-            </HStack>
+            <Flex justify="space-between" align="center">
+              {/* Left Section */}
+              <HStack spacing={4}>
+                {isMobile && (
+                  <IconButton
+                    aria-label="Open menu"
+                    icon={<FiMenu />}
+                    variant="ghost"
+                    onClick={onOpen}
+                    size="lg"
+                    color={textColor}
+                    _hover={{ bg: 'gray.100' }}
+                  />
+                )}
+                
+                {/* Search Bar - Hidden on mobile */}
+                {!isMobile && (
+                  <Box position="relative" w="400px">
+                    <Box
+                      position="absolute"
+                      left={3}
+                      top="50%"
+                      transform="translateY(-50%)"
+                      color={mutedTextColor}
+                    >
+                      <FiSearch size={18} />
+                    </Box>
+                    <input
+                      type="text"
+                      placeholder="Search campaigns, influencers, analytics..."
+                      style={{
+                        width: '100%',
+                        padding: '10px 16px 10px 40px',
+                        border: `1px solid ${borderColor}`,
+                        borderRadius: '8px',
+                        fontSize: '14px',
+                        backgroundColor: bgColor,
+                        color: textColor,
+                      }}
+                    />
+                  </Box>
+                )}
+              </HStack>
 
-            <HStack spacing={4}>
-              {/* Notifications */}
-              <IconButton
-                icon={<FiBell />}
-                variant="ghost"
-                aria-label="Notifications"
-                position="relative"
-              >
-                <Badge
-                  colorScheme="red"
-                  size="sm"
-                  position="absolute"
-                  top="2"
-                  right="2"
-                >
-                  3
-                </Badge>
-              </IconButton>
-
-              {/* User Menu */}
-              <Menu>
-                <MenuButton
-                  as={IconButton}
-                  icon={<FiUser />}
+              {/* Right Section */}
+              <HStack spacing={4}>
+                {/* Notifications */}
+                <IconButton
+                  aria-label="Notifications"
+                  icon={<FiBell />}
                   variant="ghost"
-                  aria-label="User menu"
-                />
-                <MenuList>
-                  <MenuItem icon={<FiUser />}>
-                    Profile
-                  </MenuItem>
-                  <MenuItem icon={<FiSettings />}>
-                    Settings
-                  </MenuItem>
-                  <MenuDivider />
-                  <MenuItem icon={<FiLogOut />} onClick={handleLogout}>
-                    Logout
-                  </MenuItem>
-                </MenuList>
-              </Menu>
-            </HStack>
+                  size="lg"
+                  color={textColor}
+                  _hover={{ bg: 'gray.100' }}
+                  position="relative"
+                >
+                  <Badge
+                    colorScheme="red"
+                    variant="solid"
+                    size="sm"
+                    position="absolute"
+                    top={2}
+                    right={2}
+                    borderRadius="full"
+                  >
+                    3
+                  </Badge>
+                </IconButton>
+
+                {/* User Menu */}
+                <Menu>
+                  <MenuButton
+                    as={Button}
+                    variant="ghost"
+                    size="lg"
+                    rightIcon={<FiUser />}
+                    leftIcon={
+                      <Avatar
+                        size="sm"
+                        src={user?.avatar}
+                        name={user?.name}
+                        bg="purple.100"
+                      />
+                    }
+                    _hover={{ bg: 'gray.100' }}
+                    color={textColor}
+                  >
+                    <VStack align="start" spacing={0}>
+                      <Text fontSize="sm" fontWeight="medium">
+                        {user?.name}
+                      </Text>
+                      <Text fontSize="xs" color={mutedTextColor}>
+                        {user?.userType === 'brand' ? 'Brand Manager' : 'Influencer'}
+                      </Text>
+                    </VStack>
+                  </MenuButton>
+                  <MenuList bg={bgColor} borderColor={borderColor}>
+                    <MenuItem
+                      icon={<FiUser size={16} />}
+                      onClick={() => navigate('/profile')}
+                    >
+                      Profile
+                    </MenuItem>
+                    <MenuItem
+                      icon={<FiSettings size={16} />}
+                      onClick={() => navigate('/settings')}
+                    >
+                      Settings
+                    </MenuItem>
+                    <MenuDivider />
+                    <MenuItem
+                      icon={<FiLogOut size={16} />}
+                      onClick={handleLogout}
+                      color="red.500"
+                    >
+                      Logout
+                    </MenuItem>
+                  </MenuList>
+                </Menu>
+              </HStack>
+            </Flex>
           </Box>
 
           {/* Page Content */}
-          <Box flex={1} p={6} overflow="auto">
-            <MotionBox
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3 }}
-            >
-              {children}
-            </MotionBox>
+          <Box p={{ base: 4, md: 6 }}>
+            <AnimatePresence mode="wait">
+              <MotionBox
+                key={location.pathname}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.3 }}
+              >
+                {children}
+              </MotionBox>
+            </AnimatePresence>
           </Box>
         </Box>
       </Flex>

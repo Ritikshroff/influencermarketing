@@ -11,7 +11,7 @@ import Messages from './brand/Messages';
 
 const BrandDashboard: React.FC = () => {
   return (
-    <DashboardLayout userType="brand">
+    <DashboardLayout>
       <Routes>
         <Route path="/dashboard" element={<BrandMainDashboard />} />
         <Route path="/campaigns" element={<Campaigns />} />

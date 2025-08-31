@@ -5,81 +5,126 @@ import {
   HStack,
   Text,
   Heading,
-  SimpleGrid,
+  Input,
+  Select,
+  Button,
   Card,
   CardBody,
   CardHeader,
   Badge,
-  Button,
+  SimpleGrid,
   useColorModeValue,
-  Input,
-  Select,
-  InputGroup,
-  InputLeftElement,
-  Icon,
-  Avatar
+  useBreakpointValue,
+  Wrap,
+  WrapItem,
+  useDisclosure,
+  Drawer,
+  DrawerBody,
+  DrawerHeader,
+  DrawerOverlay,
+  DrawerContent,
+  DrawerCloseButton,
+  IconButton,
+  Divider,
+  Icon
 } from '@chakra-ui/react';
 import { motion } from 'framer-motion';
-import { FiSearch, FiTarget } from 'react-icons/fi';
-import { dummyCampaigns } from '../../../data/dummyData.js';
+import { FiSearch, FiFilter, FiUsers, FiEye, FiDollarSign } from 'react-icons/fi';
+import { dummyBrands } from '../../../data/dummyData.js';
 
 const MotionBox = motion.create(Box);
 
 const ExploreBrands: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('');
+  const [selectedNiche, setSelectedNiche] = useState('');
   const [selectedBudget, setSelectedBudget] = useState('');
+  
+  const { isOpen, onOpen, onClose } = useDisclosure();
   
   const bgColor = useColorModeValue('white', 'gray.800');
   const borderColor = useColorModeValue('gray.200', 'gray.600');
+  const textColor = useColorModeValue('gray.800', 'white');
+  const mutedTextColor = useColorModeValue('gray.600', 'gray.300');
+  
+  const isMobile = useBreakpointValue({ base: true, md: false });
 
-  const categories = ['All', 'Fashion', 'Tech', 'Fitness', 'Food', 'Travel', 'Beauty'];
-  const budgetRanges = ['All', 'Under $1K', '$1K-$5K', '$5K-$10K', '$10K+'];
-
-  const filteredCampaigns = dummyCampaigns.filter(campaign => {
-    const matchesSearch = campaign.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         campaign.brandName.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = !selectedCategory || selectedCategory === 'All' || 
-                           campaign.niche.includes(selectedCategory);
-    const matchesBudget = !selectedBudget || selectedBudget === 'All' ||
-                         (selectedBudget === 'Under $1K' && campaign.budget < 1000) ||
-                         (selectedBudget === '$1K-$5K' && campaign.budget >= 1000 && campaign.budget < 5000) ||
-                         (selectedBudget === '$5K-$10K' && campaign.budget >= 5000 && campaign.budget < 10000) ||
-                         (selectedBudget === '$10K+' && campaign.budget >= 10000);
+  // Filter brands based on search and filters
+  const filteredBrands = dummyBrands.filter(brand => {
+    const matchesSearch = brand.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         brand.companyName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         brand.industry.toLowerCase().includes(searchTerm.toLowerCase());
     
-    return matchesSearch && matchesCategory && matchesBudget;
+    const matchesNiche = !selectedNiche || brand.industry.toLowerCase().includes(selectedNiche.toLowerCase());
+    const matchesBudget = !selectedBudget || getBudgetRange(brand.budget) === selectedBudget;
+    
+    return matchesSearch && matchesNiche && matchesBudget;
   });
 
-  const BrandCard = ({ campaign }: { campaign: any }) => (
+  const getBudgetRange = (budget: number) => {
+    if (budget < 5000) return '$1K - $5K';
+    if (budget < 10000) return '$5K - $10K';
+    if (budget < 25000) return '$10K - $25K';
+    return '$25K+';
+  };
+
+  const handleNicheToggle = (niche: string) => {
+    setSelectedNiche(selectedNiche === niche ? '' : niche);
+  };
+
+  const clearFilters = () => {
+    setSearchTerm('');
+    setSelectedNiche('');
+    setSelectedBudget('');
+  };
+
+  const niches = ['Fashion', 'Beauty', 'Technology', 'Food', 'Travel', 'Fitness', 'Lifestyle', 'Gaming'];
+  const budgetRanges = ['$1K - $5K', '$5K - $10K', '$10K - $25K', '$25K+'];
+
+
+  const BrandCard = ({ brand }: { brand: any }) => (
     <MotionBox
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
     >
-      <Card bg={bgColor} border="1px" borderColor={borderColor} h="full">
-        <CardHeader>
+      <Card 
+        bg={bgColor} 
+        border="1px" 
+        borderColor={borderColor}
+        shadow="sm"
+        h="full"
+        _hover={{ shadow: 'md', transform: 'translateY(-2px)' }}
+        transition="all 0.2s"
+      >
+        <CardHeader pb={3}>
           <VStack align="start" spacing={3}>
             <HStack justify="space-between" w="full">
-              <HStack spacing={3}>
-                <Avatar size="md" name={campaign.brandName} />
-                <VStack align="start" spacing={0}>
-                  <Text fontWeight="semibold">{campaign.brandName}</Text>
-                  <Text fontSize="sm" color="gray.500">
-                    {campaign.niche.join(', ')}
-                  </Text>
-                </VStack>
-              </HStack>
-              <Badge colorScheme="green" size="sm">
-                Active
+              <Text fontSize="sm" fontWeight="medium" color={mutedTextColor}>
+                {brand.industry}
+              </Text>
+              <Badge 
+                colorScheme="blue" 
+                size="sm"
+                fontSize="xs"
+              >
+                {getBudgetRange(brand.budget)}
               </Badge>
             </HStack>
             
             <VStack align="start" spacing={1}>
-              <Text fontSize="lg" fontWeight="bold">
-                {campaign.title}
-              </Text>
-              <Text fontSize="sm" color="gray.600" noOfLines={2}>
-                {campaign.description}
+              <Heading 
+                size={{ base: 'md', md: 'lg' }} 
+                color={textColor}
+                fontWeight="semibold"
+              >
+                {brand.companyName}
+              </Heading>
+              <Text 
+                fontSize={{ base: 'sm', md: 'md' }} 
+                color={mutedTextColor}
+                noOfLines={2}
+              >
+                {brand.industry} company looking for influencers
               </Text>
             </VStack>
           </VStack>
@@ -87,79 +132,52 @@ const ExploreBrands: React.FC = () => {
         
         <CardBody pt={0}>
           <VStack spacing={4} align="stretch">
-            {/* Campaign Details */}
-            <HStack justify="space-between">
-              <HStack spacing={4}>
-                <VStack align="start" spacing={0}>
-                  <Text fontSize="xs" color="gray.500">Budget</Text>
-                  <Text fontSize="sm" fontWeight="semibold" color="green.600">
-                    ${campaign.budget.toLocaleString()}
-                  </Text>
-                </VStack>
-                <VStack align="start" spacing={0}>
-                  <Text fontSize="xs" color="gray.500">Timeline</Text>
-                  <Text fontSize="sm" fontWeight="semibold">
-                    {new Date(campaign.timeline.startDate).toLocaleDateString()}
-                  </Text>
-                </VStack>
-              </HStack>
-            </HStack>
-
-            {/* Requirements */}
-            <Box>
-              <Text fontSize="xs" color="gray.500" mb={2}>
-                Requirements:
-              </Text>
-              <HStack spacing={1} flexWrap="wrap">
-                {campaign.requirements.slice(0, 2).map((req: string, index: number) => (
-                  <Badge key={index} colorScheme="purple" size="sm">
-                    {req}
-                  </Badge>
-                ))}
-                {campaign.requirements.length > 2 && (
-                  <Badge colorScheme="gray" size="sm">
-                    +{campaign.requirements.length - 2} more
-                  </Badge>
-                )}
-              </HStack>
-            </Box>
-
-            {/* Goals */}
-            <Box>
-              <Text fontSize="xs" color="gray.500" mb={2}>
-                Goals:
-              </Text>
-              <HStack spacing={1} flexWrap="wrap">
-                {campaign.goals.map((goal: string, index: number) => (
-                  <Badge key={index} colorScheme="blue" size="sm">
-                    {goal}
-                  </Badge>
-                ))}
-              </HStack>
-            </Box>
-
-            {/* Eligibility Check */}
-            <Box p={3} bg="green.50" borderRadius="lg" border="1px" borderColor="green.200">
+            <Wrap spacing={2}>
+              <WrapItem>
+                <Badge 
+                  colorScheme="purple" 
+                  variant="subtle" 
+                  size="sm"
+                  fontSize="xs"
+                >
+                  {brand.industry}
+                </Badge>
+              </WrapItem>
+              <WrapItem>
+                <Badge 
+                  colorScheme="blue" 
+                  variant="subtle" 
+                  size="sm"
+                  fontSize="xs"
+                >
+                  ${brand.budget.toLocaleString()}
+                </Badge>
+              </WrapItem>
+            </Wrap>
+            
+            <SimpleGrid columns={2} spacing={3}>
               <HStack spacing={2}>
-                <Icon as={FiTarget} color="green.500" boxSize={4} />
-                <Text fontSize="sm" color="green.700" fontWeight="medium">
-                  You're eligible for this campaign! 🎯
+                <Icon as={FiUsers} color={mutedTextColor} boxSize={4} />
+                <Text fontSize="xs" color={mutedTextColor}>
+                  {brand.budget.toLocaleString()}
                 </Text>
               </HStack>
-            </Box>
-
-            {/* Action Button */}
+              <HStack spacing={2}>
+                <Icon as={FiDollarSign} color={mutedTextColor} boxSize={4} />
+                <Text fontSize="xs" color={mutedTextColor}>
+                  Budget
+                </Text>
+              </HStack>
+            </SimpleGrid>
+            
             <Button
               colorScheme="purple"
-              size="lg"
+              size="sm"
               w="full"
-              _hover={{
-                transform: 'translateY(-2px)',
-                boxShadow: 'lg',
-              }}
-              transition="all 0.2s"
+              leftIcon={<FiEye />}
+              variant="outline"
             >
-              Apply Now 🚀
+              View Details
             </Button>
           </VStack>
         </CardBody>
@@ -167,111 +185,255 @@ const ExploreBrands: React.FC = () => {
     </MotionBox>
   );
 
-  return (
-    <Box>
-      {/* Header */}
-      <MotionBox
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        mb={8}
-      >
-        <VStack align="start" spacing={2}>
-          <Heading size="lg" bgGradient="linear(to-r, purple.500, blue.500)" bgClip="text">
-            Explore Brands 🏢
-          </Heading>
-          <Text color="gray.600">
-            Discover amazing campaigns from top brands and apply to grow your influence
-          </Text>
-        </VStack>
-      </MotionBox>
-
-      {/* Filters */}
-      <Card bg={bgColor} border="1px" borderColor={borderColor} mb={6}>
-        <CardBody>
-          <VStack spacing={4}>
-            <HStack w="full" spacing={4}>
-              <InputGroup>
-                <InputLeftElement>
-                  <Icon as={FiSearch} color="gray.400" />
-                </InputLeftElement>
-                <Input
-                  placeholder="Search brands or campaigns..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  size="lg"
-                  borderRadius="lg"
-                />
-              </InputGroup>
-            </HStack>
-            
-            <HStack spacing={4} w="full">
-              <Select
-                placeholder="Category"
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                size="lg"
-                borderRadius="lg"
-              >
-                {categories.map((category) => (
-                  <option key={category} value={category}>
-                    {category}
-                  </option>
+  const FilterDrawer = () => (
+    <Drawer isOpen={isOpen} placement="right" onClose={onClose} size="sm">
+      <DrawerOverlay />
+      <DrawerContent>
+        <DrawerCloseButton />
+        <DrawerHeader borderBottomWidth="1px" color={textColor}>
+          Filters
+        </DrawerHeader>
+        
+        <DrawerBody>
+          <VStack spacing={6} align="stretch" pt={4}>
+            {/* Niche Filter */}
+            <Box>
+              <Text fontSize="sm" fontWeight="medium" color={textColor} mb={3}>
+                Niche
+              </Text>
+              <Wrap spacing={2}>
+                {niches.map((niche) => (
+                  <WrapItem key={niche}>
+                    <Badge
+                      colorScheme={selectedNiche === niche ? 'purple' : 'gray'}
+                      variant={selectedNiche === niche ? 'solid' : 'outline'}
+                      cursor="pointer"
+                      onClick={() => handleNicheToggle(niche)}
+                      _hover={{ opacity: 0.8 }}
+                    >
+                      {niche}
+                    </Badge>
+                  </WrapItem>
                 ))}
-              </Select>
-              
+              </Wrap>
+            </Box>
+            
+            {/* Budget Filter */}
+            <Box>
+              <Text fontSize="sm" fontWeight="medium" color={textColor} mb={3}>
+                Budget Range
+              </Text>
               <Select
-                placeholder="Budget Range"
                 value={selectedBudget}
                 onChange={(e) => setSelectedBudget(e.target.value)}
-                size="lg"
-                borderRadius="lg"
+                placeholder="All budgets"
+                size="sm"
               >
-                {budgetRanges.map((range) => (
-                  <option key={range} value={range}>
-                    {range}
+                {budgetRanges.map((budget) => (
+                  <option key={budget} value={budget}>
+                    {budget}
                   </option>
                 ))}
               </Select>
-            </HStack>
+            </Box>
+            
+
+            
+            <Divider />
+            
+            <Button
+              colorScheme="purple"
+              onClick={clearFilters}
+              variant="outline"
+              size="sm"
+            >
+              Clear All Filters
+            </Button>
           </VStack>
-        </CardBody>
-      </Card>
+        </DrawerBody>
+      </DrawerContent>
+    </Drawer>
+  );
 
-      {/* Results */}
-      <VStack spacing={4} align="stretch">
-        <HStack justify="space-between">
-          <Text fontSize="md" fontWeight="medium">
-            {filteredCampaigns.length} campaigns found
+  return (
+    <VStack spacing={{ base: 4, md: 6 }} align="stretch">
+      {/* Header */}
+      <Box>
+        <VStack align="start" spacing={3}>
+          <Heading 
+            size={{ base: 'lg', md: 'xl' }} 
+            color={textColor}
+            fontWeight="bold"
+          >
+            Explore Brands
+          </Heading>
+          <Text 
+            fontSize={{ base: 'sm', md: 'md' }} 
+            color={mutedTextColor}
+          >
+            Discover brands looking for influencers like you
           </Text>
-          <Text fontSize="sm" color="gray.500">
-            Showing best matches for your profile
+        </VStack>
+      </Box>
+
+      {/* Search and Filters */}
+      <Box>
+        <VStack spacing={4} align="stretch">
+          {/* Search Bar */}
+          <HStack spacing={3}>
+            <Box flex={1}>
+              <Input
+                placeholder="Search brands, niches, or descriptions..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                size="lg"
+                bg={bgColor}
+                borderColor={borderColor}
+                _focus={{ borderColor: 'purple.500', boxShadow: '0 0 0 1px var(--chakra-colors-purple-500)' }}
+              />
+            </Box>
+            {!isMobile && (
+              <Button
+                colorScheme="purple"
+                size="lg"
+                leftIcon={<FiFilter />}
+                onClick={onOpen}
+              >
+                Filters
+              </Button>
+            )}
+            {isMobile && (
+              <IconButton
+                aria-label="Filters"
+                icon={<FiFilter />}
+                colorScheme="purple"
+                size="lg"
+                onClick={onOpen}
+              />
+            )}
+          </HStack>
+
+          {/* Mobile Filters Display */}
+          {isMobile && (
+            <Box>
+              <Text fontSize="sm" fontWeight="medium" color={textColor} mb={3}>
+                Active Filters:
+              </Text>
+              <Wrap spacing={2}>
+                {selectedNiche && (
+                  <WrapItem>
+                    <Badge colorScheme="purple" variant="solid" size="sm">
+                      {selectedNiche}
+                    </Badge>
+                  </WrapItem>
+                )}
+                {selectedBudget && (
+                  <WrapItem>
+                    <Badge colorScheme="blue" variant="solid" size="sm">
+                      {selectedBudget}
+                    </Badge>
+                  </WrapItem>
+                )}
+                                 {(selectedNiche || selectedBudget) && (
+                  <WrapItem>
+                    <Badge 
+                      colorScheme="gray" 
+                      variant="outline" 
+                      size="sm"
+                      cursor="pointer"
+                      onClick={clearFilters}
+                    >
+                      Clear All
+                    </Badge>
+                  </WrapItem>
+                )}
+              </Wrap>
+            </Box>
+          )}
+
+          {/* Desktop Quick Filters */}
+          {!isMobile && (
+            <Box>
+              <Text fontSize="sm" fontWeight="medium" color={textColor} mb={3}>
+                Quick Filters:
+              </Text>
+              <Wrap spacing={3}>
+                {niches.slice(0, 6).map((niche) => (
+                  <WrapItem key={niche}>
+                    <Badge
+                      colorScheme={selectedNiche === niche ? 'purple' : 'gray'}
+                      variant={selectedNiche === niche ? 'solid' : 'outline'}
+                      cursor="pointer"
+                      onClick={() => handleNicheToggle(niche)}
+                      _hover={{ opacity: 0.8 }}
+                      size="md"
+                    >
+                      {niche}
+                    </Badge>
+                  </WrapItem>
+                ))}
+              </Wrap>
+            </Box>
+          )}
+        </VStack>
+      </Box>
+
+      {/* Results Count */}
+      <Box>
+        <HStack justify="space-between" align="center">
+          <Text fontSize="sm" color={mutedTextColor}>
+            {filteredBrands.length} brands found
           </Text>
+                     {(selectedNiche || selectedBudget) && (
+            <Button
+              size="sm"
+              variant="ghost"
+              colorScheme="purple"
+              onClick={clearFilters}
+            >
+              Clear Filters
+            </Button>
+          )}
         </HStack>
+      </Box>
 
-        <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={6}>
-          {filteredCampaigns.map((campaign) => (
-            <BrandCard key={campaign.id} campaign={campaign} />
-          ))}
-        </SimpleGrid>
+      {/* Brands Grid */}
+      <SimpleGrid 
+        columns={{ base: 1, md: 2, lg: 3 }} 
+        spacing={{ base: 4, md: 6 }}
+      >
+        {filteredBrands.map((brand) => (
+          <BrandCard key={brand.id} brand={brand} />
+        ))}
+      </SimpleGrid>
 
-        {filteredCampaigns.length === 0 && (
-          <Card bg={bgColor} border="1px" borderColor={borderColor}>
-            <CardBody textAlign="center" py={12}>
-              <VStack spacing={4}>
-                <Icon as={FiSearch} boxSize={12} color="gray.400" />
-                <Text fontSize="lg" fontWeight="medium" color="gray.600">
-                  No campaigns found
-                </Text>
-                <Text fontSize="sm" color="gray.500">
-                  Try adjusting your filters or search terms
-                </Text>
-              </VStack>
-            </CardBody>
-          </Card>
-        )}
-      </VStack>
-    </Box>
+      {/* Empty State */}
+      {filteredBrands.length === 0 && (
+        <Box textAlign="center" py={12}>
+          <VStack spacing={4}>
+            <Icon as={FiSearch} boxSize={12} color={mutedTextColor} />
+            <VStack spacing={2}>
+              <Text fontSize="lg" fontWeight="semibold" color={textColor}>
+                No brands found
+              </Text>
+              <Text fontSize="sm" color={mutedTextColor}>
+                Try adjusting your search terms or filters
+              </Text>
+            </VStack>
+            <Button
+              colorScheme="purple"
+              variant="outline"
+              onClick={clearFilters}
+            >
+              Clear All Filters
+            </Button>
+          </VStack>
+        </Box>
+      )}
+
+      {/* Filter Drawer for Mobile */}
+      <FilterDrawer />
+    </VStack>
   );
 };
 
