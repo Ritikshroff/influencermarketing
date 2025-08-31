@@ -33,10 +33,10 @@ import {
   FiTrendingUp,
   FiUsers,
   FiDollarSign,
-  FiEye,
-  FiMessageSquare,
+  FiTarget,
   FiPlus,
-  FiTarget
+  FiEye,
+  FiMessageSquare
 } from 'react-icons/fi';
 import { useAuth } from '../../../contexts/AuthContext';
 import { dummyBrands, dummyCampaigns, dummyInfluencers } from '../../../data/dummyData.js';
